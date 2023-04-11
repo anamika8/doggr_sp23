@@ -23,7 +23,8 @@
     "@mikro-orm/reflection": "^5.6.15",
     "dotenv": "^16.0.3",
     "fastify": "^4.15.0",
-    "fastify-plugin": "^4.5.0"
+    "fastify-plugin": "^4.5.0",
+    "pnpm": "^8.2.0"
   },
   "devDependencies": {
     "@mikro-orm/cli": "^5.6.15",

@@ -1,29 +1,14 @@
-import dotenv from "dotenv";
-import Fastify, {FastifyReply, FastifyRequest} from "fastify";
-import {User} from "./db/entities/User.js";
-import config from "./db/mikro-orm.config.js";
-import {FastifyMikroOrmPlugin} from "./plugins/mikro.js";
-
+import * as dotenv from 'dotenv';  
 dotenv.config();
-
-const app = Fastify();
-
-await app.register(FastifyMikroOrmPlugin, config);
-
-app.get('/', async (request: FastifyRequest, reply: FastifyReply) => {
-	return 'Hilo';
-}); 
-
-app.get("/dbTest", async (request: FastifyRequest, reply: FastifyReply) => {
-	return request.em.find(User, {});
-});
-
-app.listen({ port: 8080}, 
-	(err, address) => {
-		if (err) {
-			console.error(err);
-			process.exit(1);
-		}
-		console.log(`Started server at ${address}`);
-	}
-);
+import http from "http";  
+  // createServer( fn requestListener)
+  // requestListener(request, response)
+const server = http.createServer( (request, response) => {  
+  //handle the request  
+  console.log("Received hello world request");
+  response.writeHead(200, {"Content-Type": "text/html"});
+  response.write("Hello world testing");
+  response.end();  
+});  
+  
+server.listen(process.env.PORT, () => console.log("Server running on port 8080"));
