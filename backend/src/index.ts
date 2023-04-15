@@ -1,14 +1,11 @@
-import * as dotenv from 'dotenv';  
+/* eslint-disable */
+// @ts-nocheck
+import * as dotenv from 'dotenv';
+import {Nastify} from "./server.js";
 dotenv.config();
-import http from "http";  
-  // createServer( fn requestListener)
-  // requestListener(request, response)
-const server = http.createServer( (request, response) => {  
-  //handle the request  
-  console.log("Received hello world request");
-  response.writeHead(200, {"Content-Type": "text/html"});
-  response.write("Hello world testing");
-  response.end();  
-});  
-  
-server.listen(process.env.PORT, () => console.log("Server running on port 8080"));
+
+let app = Nastify();
+
+app.listen(8080, () => {
+	console.log("Server listening on port 8080...");
+})
