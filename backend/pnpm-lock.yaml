@@ -19,6 +19,9 @@ dependencies:
   fastify-plugin:
     specifier: ^4.5.0
     version: 4.5.0
+  pnpm:
+    specifier: ^8.2.0
+    version: 8.2.0
 
 devDependencies:
   '@mikro-orm/cli':
@@ -1773,6 +1776,12 @@ packages:
       safe-stable-stringify: 2.4.3
       sonic-boom: 3.3.0
       thread-stream: 2.3.0
+    dev: false
+
+  /pnpm@8.2.0:
+    resolution: {integrity: sha512-f2/abl6GycxLgVZQtWA2zBJKMXcv2L86HGRwJ4qnS02gVzLgtFegC25qWKFtUunCY74GUwxq2A7yGAJEyOuCYg==}
+    engines: {node: '>=16.14'}
+    hasBin: true
     dev: false
 
   /postgres-array@2.0.0:
