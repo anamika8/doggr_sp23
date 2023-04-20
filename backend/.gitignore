@@ -2,7 +2,3 @@ node_modules/
 build/
 **/*.tsbuildinfo
 /.env
-.history/
-.idea/
-.code/
-temp/
