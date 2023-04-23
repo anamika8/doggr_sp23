@@ -7,10 +7,4 @@ export class User extends BaseEntity {
 	email!: string;
 
 }
-// export const schema = new EntitySchema({
-//     class: User,
-//     extends: "BaseEntity",
-//     properties: {
-//         email: { type: "string" },
-//     },
-// });
+
