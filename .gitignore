@@ -2,4 +2,6 @@
 .idea/
 .code/
 temp/
+.DS_Store
+.vscode/
 
