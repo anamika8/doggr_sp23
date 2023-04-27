@@ -19,6 +19,8 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 		return req.em.find(User, {});
 	});
 
+	// CRUD
+	// C
 	app.post<{Body: ICreateUsersBody}>("/users", async (req, reply) => {
 		const { name, email, petType} = req.body;
 
@@ -40,6 +42,72 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 			return reply.status(500).send({ message: err.message});
 		}
 	});
+
+	// Core method for adding generic SEARCH http method
+	// app.route<{Body: { email: string}}>({
+	// 	method: "SEARCH",
+	// 	url: "/users",
+	//
+	// 	handler: async(req, reply) => {
+	// 		const { email } = req.body;
+	//
+	// 		try {
+	// 			const theUser = await req.em.findOne(User, { email });
+	// 			console.log(theUser);
+	// 			reply.send(theUser);
+	// 		} catch (err) {
+	// 			console.error(err);
+	// 			reply.status(500).send(err);
+	// 		}
+	// 	}
+	// });
+	
+	//READ
+	app.search("/users", async (req, reply) => {
+		const { email } = req.body;
+		
+		try {
+			const theUser = await req.em.findOne(User, { email });
+			console.log(theUser);
+			reply.send(theUser);
+		} catch (err) {
+			console.error(err);
+			reply.status(500).send(err);
+		}
+	});
+	
+	// UPDATE
+	app.put<{Body: ICreateUsersBody}>("/users", async(req, reply) => {
+		const { name, email, petType} = req.body;
+		
+		const userToChange = await req.em.findOne(User, {email});
+		userToChange.name = name;
+		userToChange.petType = petType;
+		
+		// Reminder -- this is how we persist our JS object changes to the database itself
+		await req.em.flush();
+		console.log(userToChange);
+		reply.send(userToChange);
+		
+	});
+	
+	// DELETE
+	app.delete<{ Body: {email}}>("/users", async(req, reply) => {
+		const { email } = req.body;
+		
+		try {
+			// using reference is enough, no need for a fully initialized entity
+			const userToDelete = await req.em.findOne(User, { email });
+	
+			await req.em.remove(userToDelete).flush();
+			console.log(userToDelete);
+			reply.send(userToDelete);
+		} catch (err) {
+			console.error(err);
+			reply.status(500).send(err);
+		}
+	});	
+
 }
 
 export default DoggrRoutes;
