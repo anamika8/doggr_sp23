@@ -2,7 +2,7 @@ FROM node:18
 
 RUN npm install -g pnpm
 
-WORKDIR /backend
+WORKDIR /app
 COPY package.json .
 COPY pnpm-lock.yaml .
 
