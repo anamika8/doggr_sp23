@@ -1,29 +1,25 @@
-import {User} from "./db/entities/User.js";
 import { FastifyInstance, FastifyReply, FastifyRequest} from "fastify";
+import {User} from "./db/entities/User.js";
 import {ICreateUsersBody} from "./types.js";
 
 async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 	if (!app) {
-		throw new Error("Fastify instance has no value during route construction");
+		throw new Error("Fastify instance has no value during routes construction");
 	}
-
-	app.get("/hello", async(_req: FastifyRequest, _reply: FastifyReply) => {
+	
+	app.get('/hello', async (request: FastifyRequest, reply: FastifyReply) => {
 		return 'hello';
 	});
-
-	app.get("/hello2", async(_req, _reply) => {
-		return 'hello2';
-	});
-
-	app.get("/dbTest", async (req, _reply) => {
-		return req.em.find(User, {});
+	
+	app.get("/dbTest", async (request: FastifyRequest, reply: FastifyReply) => {
+		return request.em.find(User, {});
 	});
 
 	// CRUD
 	// C
 	app.post<{Body: ICreateUsersBody}>("/users", async (req, reply) => {
 		const { name, email, petType} = req.body;
-
+		
 		try {
 			const newUser = await req.em.create(User, {
 				name,
@@ -38,8 +34,8 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 			console.log("Created new user:", newUser);
 			return reply.send(newUser);
 		} catch (err) {
-			console.log("Failed to create new user: ", err.message);
-			return reply.status(500).send({ message: err.message});
+			console.log("Failed to create new user", err.message);
+			return reply.status(500).send({message: err.message});
 		}
 	});
 
@@ -65,7 +61,6 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 	//READ
 	app.search("/users", async (req, reply) => {
 		const { email } = req.body;
-		
 		try {
 			const theUser = await req.em.findOne(User, { email });
 			console.log(theUser);
