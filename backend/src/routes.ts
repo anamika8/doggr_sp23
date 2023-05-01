@@ -1,6 +1,8 @@
 import { FastifyInstance, FastifyReply, FastifyRequest} from "fastify";
+import { Message } from "./db/entities/Message.js";
 import {User} from "./db/entities/User.js";
 import {ICreateUsersBody} from "./types.js";
+import {readFileSync} from "node:fs";
 
 async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 	if (!app) {
@@ -130,6 +132,169 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 		}
 
 	});
+
+	const badwordsCheck = (message) => {
+		// Check for bad words
+		const badwordsString = readFileSync("./src/plugins/badwords.txt", {encoding: 'utf-8'});
+		const badwords = badwordsString.split('\r\n');
+
+		let badword = "";
+		// https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/badwordslist/badwords.txt 
+		for (let i = 0; i <= badwords.length; i++) {
+			if (message.toLowerCase()
+				.includes(badwords[i])) {
+				badword = badwords[i];
+				break;
+			}
+		}
+
+		return badword;
+	};
+
+	// CREATE MESSAGE ROUTE
+	app.post<{Body: { sender: string, receiver: string, message: string }}>
+	("/messages", async (req, reply) => {
+		const { sender, receiver, message } = req.body;		
+		const badword = badwordsCheck(message);
+
+		if (badword === "") { 
+			try {
+				// make sure that the receipient exists & get their user account
+				const theRecipient = await req.em.findOne(User, { email: receiver });
+				// do the same for the messager/sender
+				const theSender = await req.em.findOne(User, { email: sender });
+	
+				//create a new message between them
+				const newMessage = await req.em.create(Message, {
+					theSender,
+					theRecipient,
+					message
+				});
+	
+				//persist it to the database
+				await req.em.flush();
+				// send the message back to the user
+				return reply.send(newMessage);
+			} catch (err) {
+				console.error(err);
+				return reply.status(500).send(err);
+			}
+
+		} else {
+			await reply.status(500).send({
+				message: "Your message contains some naughty words. Please remove the words and try again.",
+			});
+		}			
+
+	});
+
+	app.search<{Body: { sender: string }}>("/messages/sent", async(req, reply) => {
+		const { sender} = req.body;
+		
+		try {
+
+			// make sure that the sender exists & get their user account
+			const theSender = await req.em.findOne(User, { email: sender });
+		
+			const sentMessage = await req.em.find(Message, {theSender});
+
+			// send the message back to the user
+			return reply.send(sentMessage);
+		} catch (err) {
+			console.error(err);
+			return reply.status(500).send(err);
+		}
+		
+	});
+
+	app.search<{Body: { receiver: string }}>("/messages", async(req, reply) => {
+		const { receiver} = req.body;
+		
+		try {
+
+			// make sure that the receipient exists & get their user account
+			const theRecipient = await req.em.findOne(User, { email: receiver });			
+	
+			const receivedMessage = await req.em.find(Message, {theRecipient});
+
+			// send the message back to the user
+			return reply.send(receivedMessage);
+		} catch (err) {
+			console.error(err);
+			return reply.status(500).send(err);
+		}
+		
+	});
+
+	// UPDATE
+	app.put<{Body: { messageId: string, message: string }}>("/messages", async(req, reply) => {
+		const { messageId, message} = req.body;
+		const id = parseInt(messageId);
+		const badword = badwordsCheck(message);
+
+		if (badword === "") {
+
+			try{
+				const messageToChange = await req.em.findOne(Message, { id });
+				messageToChange.message = message;
+			
+				
+				// Reminder -- this is how we persist our JS object changes to the database itself
+				await req.em.flush();
+				console.log(messageToChange);
+				reply.send(messageToChange);
+	
+			} catch (err) {
+				console.error(err);
+				return reply.status(500).send(err);
+			}	
+
+		} else {
+			await reply.status(500).send({
+				message: "Your message contains some naughty words. Please remove the words and try again." 
+			});
+		}			
+		
+	});
+
+	// DELETE
+	app.delete<{Body: { messageId: string }}>("/messages", async(req, reply) => {
+		const { messageId} = req.body;
+		const id = parseInt(messageId);
+		
+		try {
+			// using reference is enough, no need for a fully initialized entity
+			const messageToDelete = await req.em.findOne(Message, { id });
+	
+			await req.em.remove(messageToDelete).flush();
+			console.log(messageToDelete);
+			reply.send(messageToDelete);
+		} catch (err) {
+			console.error(err);
+			reply.status(500).send(err);
+		}
+	});	
+
+	
+	app.delete<{Body: { sender: string }}>("/messages/all", async(req, reply) => {
+		const { sender} = req.body;
+		
+		try {
+
+			// make sure that the sender exists & get their user account
+			const theSender = await req.em.findOne(User, { email: sender });
+
+			const sentMessagesToDelete = await req.em.find(Message, {theSender});
+
+	
+			await req.em.remove(sentMessagesToDelete).flush();
+			console.log(sentMessagesToDelete);
+			reply.send(sentMessagesToDelete);
+		} catch (err) {
+			console.error(err);
+			reply.status(500).send(err);
+		}
+	});	
 
 }
 
