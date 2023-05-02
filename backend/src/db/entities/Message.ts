@@ -20,4 +20,6 @@ export class Message extends BaseEntity{
     @Property()
 	message!: string;
 
+	@Property()
+	deleted: boolean;
 }

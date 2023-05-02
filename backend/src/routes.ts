@@ -165,12 +165,15 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 				const theRecipient = await req.em.findOne(User, { email: receiver });
 				// do the same for the messager/sender
 				const theSender = await req.em.findOne(User, { email: sender });
-	
+				//addeed field deleted for soft delete
+				const deleted = false;
+	            
 				//create a new message between them
 				const newMessage = await req.em.create(Message, {
 					theSender,
 					theRecipient,
-					message
+					message,
+					deleted
 				});
 	
 				//persist it to the database
@@ -200,7 +203,7 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 			// make sure that the sender exists & get their user account
 			const theSender = await req.em.findOne(User, { email: sender });
 		
-			const sentMessage = await req.em.find(Message, {theSender});
+			const sentMessage = await req.em.find(Message, {theSender, deleted: false});
 
 			// send the message back to the user
 			return reply.send(sentMessage);
@@ -216,10 +219,10 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 		
 		try {
 
-			// make sure that the receipient exists & get their user account
+			// make sure that the recipient exists & get their user account
 			const theRecipient = await req.em.findOne(User, { email: receiver });			
 	
-			const receivedMessage = await req.em.find(Message, {theRecipient});
+			const receivedMessage = await req.em.find(Message, {theRecipient, deleted: false});
 
 			// send the message back to the user
 			return reply.send(receivedMessage);
@@ -272,11 +275,17 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 		if (admin_password === password) {
 			try {
 				// using reference is enough, no need for a fully initialized entity
-				const messageToDelete = await req.em.findOne(Message, { id });
-		
-				await req.em.remove(messageToDelete).flush();
-				console.log(messageToDelete);
-				reply.send(messageToDelete);
+				const messageToDelete = await req.em.findOne(Message, { id, "deleted": false });
+				if (messageToDelete !== null) {
+					messageToDelete.deleted = true;
+					console.log(messageToDelete);
+					//await req.em.remove(messageToDelete).flush();
+					await req.em.flush();
+					reply.send(messageToDelete);
+				} else {
+					reply.send({});
+				}
+
 			} catch (err) {
 				console.error(err);
 				reply.status(500).send(err);
@@ -299,16 +308,20 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 		const admin_password = process.env.ADMIN_PASSWORD;
 		if (admin_password === password) {		
 			try {
-
 				// make sure that the sender exists & get their user account
 				const theSender = await req.em.findOne(User, { email: sender });
 
-				const sentMessagesToDelete = await req.em.find(Message, {theSender});
-
-	
-				await req.em.remove(sentMessagesToDelete).flush();
-				console.log(sentMessagesToDelete);
-				reply.send(sentMessagesToDelete);
+				const sentMessagesToDelete = await req.em.find(Message, {theSender, deleted: false});
+				if (sentMessagesToDelete !== null) {
+					sentMessagesToDelete.forEach(sentMessageToDelete => sentMessageToDelete.deleted = true);
+					//await req.em.remove(sentMessagesToDelete).flush();
+					await req.em.flush();
+					console.log(sentMessagesToDelete);
+					reply.send(sentMessagesToDelete);
+				} else {
+					console.log("No messages to delete");
+					reply.send({});
+				}
 			} catch (err) {
 				console.error(err);
 				reply.status(500).send(err);

@@ -16,37 +16,50 @@ export class MessageSeeder extends Seeder {
 		em.create(Message, {
 			theSender: user1,
 			theRecipient: user2,
-			message: "Hi, Seeder Message"
+			message: "Hi, Seeder Message",
+			deleted: false
 		});
 
 		em.create(Message, {
 			theSender: user1,
 			theRecipient: user2,
-			message: "Hi"
+			message: "Hi",
+			deleted: false
 		});
 
 		em.create(Message, {
 			theSender: user2,
 			theRecipient: user1,
-			message: "Hi, How are you doing?"
+			message: "Hi, How are you doing?",
+			deleted: false
 		});
 
 		em.create(Message, {
 			theSender: user3,
 			theRecipient: user1,
-			message: "Hi there, how are you?"
+			message: "Hi there, how are you?",
+			deleted: false
 		});
 
 		em.create(Message, {
 			theSender: user1,
 			theRecipient: user3,
-			message: "Hey there"
+			message: "Hey there",
+			deleted: false
 		});
 
 		em.create(Message, {
 			theSender: user2,
 			theRecipient: user3,
-			message: "Hey whatsup"
+			message: "Hey whatsup",
+			deleted: false
+		});
+
+		em.create(Message, {
+			theSender: user2,
+			theRecipient: user3,
+			message: "oops sorry",
+			deleted: true
 		});
 
 	}
