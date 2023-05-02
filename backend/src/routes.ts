@@ -183,10 +183,12 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 			}
 
 		} else {
-			await reply.status(500).send({
-				message: "Your message contains some naughty words. Please remove the words and try again.",
+			const errorMessage = "Your message contains some naughty words. Please remove the words and try again"; 
+			console.error(errorMessage);
+			reply.status(500).send({
+				message: errorMessage
 			});
-		}			
+		}	
 
 	});
 
@@ -252,49 +254,71 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 			}	
 
 		} else {
-			await reply.status(500).send({
-				message: "Your message contains some naughty words. Please remove the words and try again." 
+			const errorMessage = "Your message contains some naughty words. Please remove the words and try again"; 
+			console.error(errorMessage);
+			reply.status(500).send({
+				message: errorMessage
 			});
 		}			
 		
 	});
 
 	// DELETE
-	app.delete<{Body: { messageId: string }}>("/messages", async(req, reply) => {
-		const { messageId} = req.body;
+	app.delete<{Body: { messageId: string, password: string }}>("/messages", async(req, reply) => {
+		const { messageId, password} = req.body;
 		const id = parseInt(messageId);
+
+		const admin_password = process.env.ADMIN_PASSWORD;
+		if (admin_password === password) {
+			try {
+				// using reference is enough, no need for a fully initialized entity
+				const messageToDelete = await req.em.findOne(Message, { id });
 		
-		try {
-			// using reference is enough, no need for a fully initialized entity
-			const messageToDelete = await req.em.findOne(Message, { id });
-	
-			await req.em.remove(messageToDelete).flush();
-			console.log(messageToDelete);
-			reply.send(messageToDelete);
-		} catch (err) {
-			console.error(err);
-			reply.status(500).send(err);
+				await req.em.remove(messageToDelete).flush();
+				console.log(messageToDelete);
+				reply.send(messageToDelete);
+			} catch (err) {
+				console.error(err);
+				reply.status(500).send(err);
+			}
+		} else {
+			const errorMessage = "Incorrect Admin Password";
+			console.error(errorMessage);
+			reply.status(401).send({
+				message: errorMessage
+			});
 		}
+		
+		
 	});	
 
 	
-	app.delete<{Body: { sender: string }}>("/messages/all", async(req, reply) => {
-		const { sender} = req.body;
-		
-		try {
+	app.delete<{Body: { sender: string,  password: string }}>("/messages/all", async(req, reply) => {
+		const { sender, password} = req.body;
 
-			// make sure that the sender exists & get their user account
-			const theSender = await req.em.findOne(User, { email: sender });
+		const admin_password = process.env.ADMIN_PASSWORD;
+		if (admin_password === password) {		
+			try {
 
-			const sentMessagesToDelete = await req.em.find(Message, {theSender});
+				// make sure that the sender exists & get their user account
+				const theSender = await req.em.findOne(User, { email: sender });
+
+				const sentMessagesToDelete = await req.em.find(Message, {theSender});
 
 	
-			await req.em.remove(sentMessagesToDelete).flush();
-			console.log(sentMessagesToDelete);
-			reply.send(sentMessagesToDelete);
-		} catch (err) {
-			console.error(err);
-			reply.status(500).send(err);
+				await req.em.remove(sentMessagesToDelete).flush();
+				console.log(sentMessagesToDelete);
+				reply.send(sentMessagesToDelete);
+			} catch (err) {
+				console.error(err);
+				reply.status(500).send(err);
+			}
+		} else {
+			const errorMessage = "Incorrect Admin Password";
+			console.error(errorMessage);
+			reply.status(401).send({
+				message: errorMessage
+			});
 		}
 	});	
 
