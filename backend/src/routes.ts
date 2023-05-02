@@ -195,14 +195,14 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 
 	});
 
+	// lists all messages sent by the user
 	app.search<{Body: { sender: string }}>("/messages/sent", async(req, reply) => {
 		const { sender} = req.body;
-		
 		try {
 
 			// make sure that the sender exists & get their user account
 			const theSender = await req.em.findOne(User, { email: sender });
-		
+			// returns all non-deleted messages
 			const sentMessage = await req.em.find(Message, {theSender, deleted: false});
 
 			// send the message back to the user
@@ -214,6 +214,7 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 		
 	});
 
+	// lists all messages received by the user
 	app.search<{Body: { receiver: string }}>("/messages", async(req, reply) => {
 		const { receiver} = req.body;
 		
@@ -221,7 +222,7 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 
 			// make sure that the recipient exists & get their user account
 			const theRecipient = await req.em.findOne(User, { email: receiver });			
-	
+			// returns all non-deleted messages
 			const receivedMessage = await req.em.find(Message, {theRecipient, deleted: false});
 
 			// send the message back to the user
@@ -243,10 +244,14 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 
 			try{
 				const messageToChange = await req.em.findOne(Message, { id });
+				if (messageToChange == null) {
+					console.log(`No message with the id - ${id} exists.`);
+					// send blank output if message id is not present
+					return reply.status(500).send(`No message with the id - ${id} exists.`);
+
+				}
 				messageToChange.message = message;
 			
-				
-				// Reminder -- this is how we persist our JS object changes to the database itself
 				await req.em.flush();
 				console.log(messageToChange);
 				reply.send(messageToChange);
@@ -267,6 +272,7 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 	});
 
 	// DELETE
+	// delete all messages received by the user
 	app.delete<{Body: { messageId: string, password: string }}>("/messages", async(req, reply) => {
 		const { messageId, password} = req.body;
 		const id = parseInt(messageId);
@@ -279,11 +285,12 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 				if (messageToDelete !== null) {
 					messageToDelete.deleted = true;
 					console.log(messageToDelete);
-					//await req.em.remove(messageToDelete).flush();
+					//soft delete 
 					await req.em.flush();
 					reply.send(messageToDelete);
 				} else {
-					reply.send({});
+					// send 500 error if message id is not present
+					return reply.status(500).send(`No messages to delete`);
 				}
 
 			} catch (err) {
@@ -297,11 +304,9 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 				message: errorMessage
 			});
 		}
-		
-		
 	});	
 
-	
+	// delete all message sent by the user
 	app.delete<{Body: { sender: string,  password: string }}>("/messages/all", async(req, reply) => {
 		const { sender, password} = req.body;
 
@@ -312,15 +317,14 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 				const theSender = await req.em.findOne(User, { email: sender });
 
 				const sentMessagesToDelete = await req.em.find(Message, {theSender, deleted: false});
-				if (sentMessagesToDelete !== null) {
+				if (sentMessagesToDelete !== null && sentMessagesToDelete.length > 0) {
 					sentMessagesToDelete.forEach(sentMessageToDelete => sentMessageToDelete.deleted = true);
-					//await req.em.remove(sentMessagesToDelete).flush();
 					await req.em.flush();
 					console.log(sentMessagesToDelete);
 					reply.send(sentMessagesToDelete);
 				} else {
 					console.log("No messages to delete");
-					reply.send({});
+					return reply.status(500).send(`No messages to delete`);
 				}
 			} catch (err) {
 				console.error(err);

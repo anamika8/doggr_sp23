@@ -17,9 +17,11 @@ export class Message extends BaseEntity{
 	@ManyToOne()
 	theRecipient!: Rel<User>;
 
+	// the message content
     @Property()
 	message!: string;
 
+	// Used for soft-deletes. Set to true when deleted
 	@Property()
 	deleted: boolean;
 }

@@ -32,7 +32,7 @@ export class User extends BaseEntity {
 	matched_by!: Collection<Match>;
 
 
-	//a user can have lot of messages
+	//a user can send lot of messages
 	@OneToMany(
 		() => Message,
 		message => message.theSender,
@@ -40,6 +40,7 @@ export class User extends BaseEntity {
 	)
 	sent!: Collection<Message>;
 
+	//a user can have lot of messages
 	@OneToMany(
 		() => Message,
 		message => message.theRecipient,
