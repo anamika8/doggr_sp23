@@ -8,30 +8,28 @@ export function response(res) {
 		res.end(content);
 		return res;
 	}
-	
-	
+
 	// 200 vs 404
 	res.status = (code) => {
 		res.statusCode = code || res.statusCode;
 		return res;
 	};
-	
+
 	res.send = (content) => {
 		res.setHeader("Content-Type", "text/html");
 		return end(content);
 	};
-	
+
 	res.json = (content) => {
 		content = JSON.stringify(content);
 		res.setHeader("Content-Type", "application/json");
 		return end(content);
 	};
-	
+
 	res.redirect = (url) => {
 		res.setHeader("Location", url);
 		res.status(301);
 		res.end();
 		return res;
 	};
-	
 }

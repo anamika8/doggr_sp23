@@ -1,34 +1,39 @@
-import { FastifyInstance, FastifyReply, FastifyRequest} from "fastify";
-import {Match} from "./db/entities/Match.js";
-import {User} from "./db/entities/User.js";
-import {ICreateUsersBody} from "./types.js";
+import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import { Match } from "./db/entities/Match.js";
+import { User } from "./db/entities/User.js";
+import { ICreateUsersBody } from "./types.js";
 import { Message } from "./db/entities/Message.js";
-import {readFileSync} from "node:fs";
+import { readFileSync } from "node:fs";
 
-
+/** This function creates all backend routes for the site
+ *
+ * @param {FastifyInstance} app - The base Fastify listen server instance
+ * @param {{}} _options - Fastify instance options (Optional)
+ * @returns {Promise<void>} - Returns all of the initialized routes
+ */
 async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 	if (!app) {
 		throw new Error("Fastify instance has no value during routes construction");
 	}
-	
-	app.get('/hello', async (request: FastifyRequest, reply: FastifyReply) => {
-		return 'hello';
+
+	app.get("/hello", async (request: FastifyRequest, reply: FastifyReply) => {
+		return "hello";
 	});
-	
+
 	app.get("/dbTest", async (request: FastifyRequest, reply: FastifyReply) => {
 		return request.em.find(User, {});
 	});
 
 	// CRUD
 	// C
-	app.post<{Body: ICreateUsersBody}>("/users", async (req, reply) => {
-		const { name, email, petType} = req.body;
-		
+	app.post<{ Body: ICreateUsersBody }>("/users", async (req, reply) => {
+		const { name, email, petType } = req.body;
+
 		try {
 			const newUser = await req.em.create(User, {
 				name,
 				email,
-				petType
+				petType,
 			});
 
 			// This will immediately update the real database.  You can store up several changes and flush only once
@@ -39,7 +44,7 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 			return reply.send(newUser);
 		} catch (err) {
 			console.log("Failed to create new user", err.message);
-			return reply.status(500).send({message: err.message});
+			return reply.status(500).send({ message: err.message });
 		}
 	});
 
@@ -61,7 +66,7 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 	// 		}
 	// 	}
 	// });
-	
+
 	//READ
 	app.search("/users", async (req, reply) => {
 		const { email } = req.body;
@@ -74,30 +79,29 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 			reply.status(500).send(err);
 		}
 	});
-	
+
 	// UPDATE
-	app.put<{Body: ICreateUsersBody}>("/users", async(req, reply) => {
-		const { name, email, petType} = req.body;
-		
-		const userToChange = await req.em.findOne(User, {email});
+	app.put<{ Body: ICreateUsersBody }>("/users", async (req, reply) => {
+		const { name, email, petType } = req.body;
+
+		const userToChange = await req.em.findOne(User, { email });
 		userToChange.name = name;
 		userToChange.petType = petType;
-		
+
 		// Reminder -- this is how we persist our JS object changes to the database itself
 		await req.em.flush();
 		console.log(userToChange);
 		reply.send(userToChange);
-		
 	});
-	
+
 	// DELETE
-	app.delete<{ Body: {email}}>("/users", async(req, reply) => {
+	app.delete<{ Body: { email } }>("/users", async (req, reply) => {
 		const { email } = req.body;
-		
+
 		try {
 			// using reference is enough, no need for a fully initialized entity
 			const userToDelete = await req.em.findOne(User, { email });
-	
+
 			await req.em.remove(userToDelete).flush();
 			console.log(userToDelete);
 			reply.send(userToDelete);
@@ -105,11 +109,10 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 			console.error(err);
 			reply.status(500).send(err);
 		}
-	});	
-
+	});
 
 	// CREATE MATCH ROUTE
-	app.post<{Body: { email: string, matchee_email: string }}>("/match", async (req, reply) => {
+	app.post<{ Body: { email: string; matchee_email: string } }>("/match", async (req, reply) => {
 		const { email, matchee_email } = req.body;
 
 		try {
@@ -121,7 +124,7 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 			//create a new match between them
 			const newMatch = await req.em.create(Match, {
 				owner,
-				matchee
+				matchee,
 			});
 
 			//persist it to the database
@@ -132,19 +135,17 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 			console.error(err);
 			return reply.status(500).send(err);
 		}
-
 	});
 
 	const badwordsCheck = (message) => {
 		// Check for bad words
-		const badwordsString = readFileSync("./src/plugins/badwords.txt", {encoding: 'utf-8'});
-		const badwords = badwordsString.split('\r\n');
+		const badwordsString = readFileSync("./src/plugins/badwords.txt", { encoding: "utf-8" });
+		const badwords = badwordsString.split("\r\n");
 
 		let badword = "";
-		// https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/badwordslist/badwords.txt 
+		// https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/badwordslist/badwords.txt
 		for (let i = 0; i <= badwords.length; i++) {
-			if (message.toLowerCase()
-				.includes(badwords[i])) {
+			if (message.toLowerCase().includes(badwords[i])) {
 				badword = badwords[i];
 				break;
 			}
@@ -154,56 +155,56 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 	};
 
 	// CREATE MESSAGE ROUTE
-	app.post<{Body: { sender: string, receiver: string, message: string }}>
-	("/messages", async (req, reply) => {
-		const { sender, receiver, message } = req.body;		
-		const badword = badwordsCheck(message);
+	app.post<{ Body: { sender: string; receiver: string; message: string } }>(
+		"/messages",
+		async (req, reply) => {
+			const { sender, receiver, message } = req.body;
+			const badword = badwordsCheck(message);
 
-		if (badword === "") { 
-			try {
-				// make sure that the receipient exists & get their user account
-				const theRecipient = await req.em.findOne(User, { email: receiver });
-				// do the same for the messager/sender
-				const theSender = await req.em.findOne(User, { email: sender });
-				//addeed field deleted for soft delete
-				const deleted = false;
-	            
-				//create a new message between them
-				const newMessage = await req.em.create(Message, {
-					theSender,
-					theRecipient,
-					message,
-					deleted
+			if (badword === "") {
+				try {
+					// make sure that the receipient exists & get their user account
+					const theRecipient = await req.em.findOne(User, { email: receiver });
+					// do the same for the messager/sender
+					const theSender = await req.em.findOne(User, { email: sender });
+					//addeed field deleted for soft delete
+					const deleted = false;
+
+					//create a new message between them
+					const newMessage = await req.em.create(Message, {
+						theSender,
+						theRecipient,
+						message,
+						deleted,
+					});
+
+					//persist it to the database
+					await req.em.flush();
+					// send the message back to the user
+					return reply.send(newMessage);
+				} catch (err) {
+					console.error(err);
+					return reply.status(500).send(err);
+				}
+			} else {
+				const errorMessage =
+					"Your message contains some naughty words. Please remove the words and try again";
+				console.error(errorMessage);
+				reply.status(500).send({
+					message: errorMessage,
 				});
-	
-				//persist it to the database
-				await req.em.flush();
-				// send the message back to the user
-				return reply.send(newMessage);
-			} catch (err) {
-				console.error(err);
-				return reply.status(500).send(err);
 			}
-
-		} else {
-			const errorMessage = "Your message contains some naughty words. Please remove the words and try again"; 
-			console.error(errorMessage);
-			reply.status(500).send({
-				message: errorMessage
-			});
-		}	
-
-	});
+		}
+	);
 
 	// lists all messages sent by the user
-	app.search<{Body: { sender: string }}>("/messages/sent", async(req, reply) => {
-		const { sender} = req.body;
+	app.search<{ Body: { sender: string } }>("/messages/sent", async (req, reply) => {
+		const { sender } = req.body;
 		try {
-
 			// make sure that the sender exists & get their user account
 			const theSender = await req.em.findOne(User, { email: sender });
 			// returns all non-deleted messages
-			const sentMessage = await req.em.find(Message, {theSender, deleted: false});
+			const sentMessage = await req.em.find(Message, { theSender, deleted: false });
 
 			// send the message back to the user
 			return reply.send(sentMessage);
@@ -211,19 +212,17 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 			console.error(err);
 			return reply.status(500).send(err);
 		}
-		
 	});
 
 	// lists all messages received by the user
-	app.search<{Body: { receiver: string }}>("/messages", async(req, reply) => {
-		const { receiver} = req.body;
-		
-		try {
+	app.search<{ Body: { receiver: string } }>("/messages", async (req, reply) => {
+		const { receiver } = req.body;
 
+		try {
 			// make sure that the recipient exists & get their user account
-			const theRecipient = await req.em.findOne(User, { email: receiver });			
+			const theRecipient = await req.em.findOne(User, { email: receiver });
 			// returns all non-deleted messages
-			const receivedMessage = await req.em.find(Message, {theRecipient, deleted: false});
+			const receivedMessage = await req.em.find(Message, { theRecipient, deleted: false });
 
 			// send the message back to the user
 			return reply.send(receivedMessage);
@@ -231,68 +230,62 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 			console.error(err);
 			return reply.status(500).send(err);
 		}
-		
 	});
 
 	// UPDATE
-	app.put<{Body: { messageId: string, message: string }}>("/messages", async(req, reply) => {
-		const { messageId, message} = req.body;
+	app.put<{ Body: { messageId: string; message: string } }>("/messages", async (req, reply) => {
+		const { messageId, message } = req.body;
 		const id = parseInt(messageId);
 		const badword = badwordsCheck(message);
 
 		if (badword === "") {
-
-			try{
+			try {
 				const messageToChange = await req.em.findOne(Message, { id });
 				if (messageToChange == null) {
 					console.log(`No message with the id - ${id} exists.`);
 					// send blank output if message id is not present
 					return reply.status(500).send(`No message with the id - ${id} exists.`);
-
 				}
 				messageToChange.message = message;
-			
+
 				await req.em.flush();
 				console.log(messageToChange);
 				reply.send(messageToChange);
-	
 			} catch (err) {
 				console.error(err);
 				return reply.status(500).send(err);
-			}	
-
+			}
 		} else {
-			const errorMessage = "Your message contains some naughty words. Please remove the words and try again"; 
+			const errorMessage =
+				"Your message contains some naughty words. Please remove the words and try again";
 			console.error(errorMessage);
 			reply.status(500).send({
-				message: errorMessage
+				message: errorMessage,
 			});
-		}			
-		
+		}
 	});
 
 	// DELETE
 	// delete all messages received by the user
-	app.delete<{Body: { messageId: string, password: string }}>("/messages", async(req, reply) => {
-		const { messageId, password} = req.body;
+	app.delete<{ Body: { messageId: string; password: string } }>("/messages", async (req, reply) => {
+		const { messageId, password } = req.body;
 		const id = parseInt(messageId);
 
 		const admin_password = process.env.ADMIN_PASSWORD;
 		if (admin_password === password) {
 			try {
 				// using reference is enough, no need for a fully initialized entity
-				const messageToDelete = await req.em.findOne(Message, { id, "deleted": false });
+				const messageToDelete = await req.em.findOne(Message, { id, deleted: false });
 				if (messageToDelete !== null) {
 					messageToDelete.deleted = true;
 					console.log(messageToDelete);
-					//soft delete 
+					//soft delete
 					await req.em.flush();
 					reply.send(messageToDelete);
 				} else {
 					// send 500 error if message id is not present
 					return reply.status(500).send(`No messages to delete`);
 				}
-
 			} catch (err) {
 				console.error(err);
 				reply.status(500).send(err);
@@ -301,44 +294,48 @@ async function DoggrRoutes(app: FastifyInstance, _options = {}) {
 			const errorMessage = "Incorrect Admin Password";
 			console.error(errorMessage);
 			reply.status(401).send({
-				message: errorMessage
+				message: errorMessage,
 			});
 		}
-	});	
+	});
 
 	// delete all message sent by the user
-	app.delete<{Body: { sender: string,  password: string }}>("/messages/all", async(req, reply) => {
-		const { sender, password} = req.body;
+	app.delete<{ Body: { sender: string; password: string } }>(
+		"/messages/all",
+		async (req, reply) => {
+			const { sender, password } = req.body;
 
-		const admin_password = process.env.ADMIN_PASSWORD;
-		if (admin_password === password) {		
-			try {
-				// make sure that the sender exists & get their user account
-				const theSender = await req.em.findOne(User, { email: sender });
+			const admin_password = process.env.ADMIN_PASSWORD;
+			if (admin_password === password) {
+				try {
+					// make sure that the sender exists & get their user account
+					const theSender = await req.em.findOne(User, { email: sender });
 
-				const sentMessagesToDelete = await req.em.find(Message, {theSender, deleted: false});
-				if (sentMessagesToDelete !== null && sentMessagesToDelete.length > 0) {
-					sentMessagesToDelete.forEach(sentMessageToDelete => sentMessageToDelete.deleted = true);
-					await req.em.flush();
-					console.log(sentMessagesToDelete);
-					reply.send(sentMessagesToDelete);
-				} else {
-					console.log("No messages to delete");
-					return reply.status(500).send(`No messages to delete`);
+					const sentMessagesToDelete = await req.em.find(Message, { theSender, deleted: false });
+					if (sentMessagesToDelete !== null && sentMessagesToDelete.length > 0) {
+						sentMessagesToDelete.forEach(
+							(sentMessageToDelete) => (sentMessageToDelete.deleted = true)
+						);
+						await req.em.flush();
+						console.log(sentMessagesToDelete);
+						reply.send(sentMessagesToDelete);
+					} else {
+						console.log("No messages to delete");
+						return reply.status(500).send(`No messages to delete`);
+					}
+				} catch (err) {
+					console.error(err);
+					reply.status(500).send(err);
 				}
-			} catch (err) {
-				console.error(err);
-				reply.status(500).send(err);
+			} else {
+				const errorMessage = "Incorrect Admin Password";
+				console.error(errorMessage);
+				reply.status(401).send({
+					message: errorMessage,
+				});
 			}
-		} else {
-			const errorMessage = "Incorrect Admin Password";
-			console.error(errorMessage);
-			reply.status(401).send({
-				message: errorMessage
-			});
 		}
-	});	
-
+	);
 }
 
 export default DoggrRoutes;
