@@ -1,10 +1,21 @@
 import { Entity, Property, Unique, OneToMany, Collection, Cascade } from "@mikro-orm/core";
-import { BaseEntity } from "./BaseEntity.js";
+import { SoftDeletable } from "mikro-orm-soft-delete";
+import { DoggrBaseEntity } from "./DoggrBaseEntity.js";
 import { Match } from "./Match.js";
+
+import { Enum } from "@mikro-orm/core";
 import { Message } from "./Message.js";
 
+export enum UserRole {
+	ADMIN = "Admin",
+	USER = "User",
+}
+
+// https://github.com/TheNightmareX/mikro-orm-soft-delete
+// Yes, it's really that easy.
+@SoftDeletable(() => User, "deleted_at", () => new Date())
 @Entity({ tableName: "users" })
-export class User extends BaseEntity {
+export class User extends DoggrBaseEntity {
 	@Property()
 	@Unique()
 	email!: string;
@@ -13,25 +24,31 @@ export class User extends BaseEntity {
 	name!: string;
 
 	@Property()
+	password!: string;
+
+	@Property()
 	petType!: string;
 
+	@Enum(() => UserRole)
+	role!: UserRole; // string enum
+
 	// Note that these DO NOT EXIST in the database itself!
-	//a user can have lot of matches
 	@OneToMany(() => Match, (match) => match.owner, { cascade: [Cascade.PERSIST, Cascade.REMOVE] })
 	matches!: Collection<Match>;
 
 	@OneToMany(() => Match, (match) => match.matchee, { cascade: [Cascade.PERSIST, Cascade.REMOVE] })
 	matched_by!: Collection<Match>;
 
-	//a user can send lot of messages
-	@OneToMany(() => Message, (message) => message.theSender, {
+	// Orphan removal used in our Delete All Sent Messages route to single-step remove via Collection
+	@OneToMany(() => Message, (message) => message.sender, {
 		cascade: [Cascade.PERSIST, Cascade.REMOVE],
+		orphanRemoval: true,
 	})
-	sent!: Collection<Message>;
+	messages_sent!: Collection<Message>;
 
-	//a user can have lot of messages
-	@OneToMany(() => Message, (message) => message.theRecipient, {
+	@OneToMany(() => Message, (message) => message.receiver, {
 		cascade: [Cascade.PERSIST, Cascade.REMOVE],
+		orphanRemoval: true,
 	})
-	inbox!: Collection<Message>;
+	messages_received!: Collection<Message>;
 }

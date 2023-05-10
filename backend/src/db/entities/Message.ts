@@ -1,25 +1,20 @@
-/** @module Models/Message */
-
-import { Entity, Property, Unique, ManyToOne } from "@mikro-orm/core";
-import { BaseEntity } from "./BaseEntity.js";
+import { Entity, Property, ManyToOne, Cascade } from "@mikro-orm/core";
+// Control + click these imports to view their actual code/type
+// Also see identity functions here - https://betterprogramming.pub/typescript-generics-90be93d8c292
+import type { Ref, Rel } from "@mikro-orm/core";
+import { DoggrBaseEntity } from "./DoggrBaseEntity.js";
 import { User } from "./User.js";
-import type { Rel } from "@mikro-orm/core";
 
 @Entity()
-export class Message extends BaseEntity {
-	// The person who send the messages
+export class Message extends DoggrBaseEntity {
+	// The person who performed the match/swiped right
 	@ManyToOne()
-	theSender!: Rel<User>;
+	sender!: Ref<User>;
 
-	// The person who received the messages
-	@ManyToOne()
-	theRecipient!: Rel<User>;
+	// The account whose profile was swiped-right-on
+	@ManyToOne("User")
+	receiver!: Rel<User>;
 
-	// the message content
 	@Property()
 	message!: string;
-
-	// Used for soft-deletes. Set to true when deleted
-	@Property()
-	deleted: boolean;
 }
