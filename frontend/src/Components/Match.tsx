@@ -1,4 +1,4 @@
-import { AuthContext } from "@/App.tsx";
+//import { AuthContext } from "@/App.tsx";
 import { Profile } from "@/Components/Profile.tsx";
 import InitialState, { getRandomProfile } from "@/InitialState.ts";
 import { useAuth } from "@/Services/Auth.tsx";
