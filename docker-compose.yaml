@@ -34,6 +34,7 @@ services:
       - HOST=0.0.0.0
       - PASSWORD=password
       - NODE_ENV=development
+      - AUTH_SECRET=doggr
     depends_on:
       postgres:
         condition: service_healthy

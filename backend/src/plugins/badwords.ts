@@ -1,8 +1,7 @@
 import axios from "axios";
-import { FastifyInstance } from "fastify";
+import {FastifyInstance} from "fastify";
 import fp from "fastify-plugin";
-const badUrl =
-	"https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/badwordslist/badwords.txt";
+const badUrl = "https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/badwordslist/badwords.txt"
 
 /**
  * Here we fetch the newest list of bad words from Google
@@ -27,24 +26,24 @@ export async function fetchBadWords() {
 	const wordSet = new Set<string>();
 
 	// Coerce the data into a Set
-	wordRes.data.split("\r\n").forEach((word) => {
+	wordRes.data.split("\r\n").forEach( (word) => {
 		wordSet.add(word);
 	});
 	return wordSet;
 }
 
-declare module "fastify" {
+declare module 'fastify' {
 	interface FastifyInstance {
 		badwords: Set<string>;
 	}
 }
 
 // Put our words onto Fastify instance like our other plugins
-const fastifyFetchBadWords = async function (app: FastifyInstance, _options) {
+const fastifyFetchBadWords = async function(app: FastifyInstance, _options) {
 	const wordSet = await fetchBadWords();
 	app.decorate("badwords", wordSet);
 };
 
 export const FastifyBadWordsPlugin = fp(fastifyFetchBadWords, {
-	name: "fastify-bad-word-filter",
+	name: "fastify-bad-word-filter"
 });
