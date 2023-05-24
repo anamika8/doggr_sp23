@@ -8,18 +8,16 @@ export function Login() {
 	const [password, setPassword] = useState("");
 	const [submitFailed, setSubmitFailed] = useState(false);
 
-	const onSubmitLogin = useCallback(
-		async() => {
-			if(context) {
-				const loginSuccess = await context.handleLogin(email, password);
-				if (!loginSuccess) {
-					setSubmitFailed(true);
-				}
-			} else {
-				console.error("We have no auth context WARNING WARNING");
+	const onSubmitLogin = useCallback(async () => {
+		if (context) {
+			const loginSuccess = await context.handleLogin(email, password);
+			if (!loginSuccess) {
+				setSubmitFailed(true);
 			}
-		}, [email, password, context, setSubmitFailed]
-	);
+		} else {
+			console.error("We have no auth context WARNING WARNING");
+		}
+	}, [email, password, context, setSubmitFailed]);
 
 	return (
 		<div>
@@ -28,32 +26,33 @@ export function Login() {
 				{submitFailed ? <p>Your password or email was incorrect! Please try again.</p> : null}
 			</div>
 
-			<label htmlFor={"email"}>Email Address:</label>
-			<input
-				type="text"
-				id="email"
-				required
-				value={email}
-				onChange={(e) => setEmail(e.target.value)}
-				name={"email"}
-			/>
+			<div>
+				<label htmlFor={"email"}>Email Address:</label>
+				<input
+					type="text"
+					id="email"
+					required
+					value={email}
+					onChange={(e) => setEmail(e.target.value)}
+					name={"email"}
+				/>
+			</div>
 
-			<label htmlFor={"password"}>Password:</label>
-			<input
-				type="password"
-				id="password"
-				required
-				value={password}
-				onChange={(e) => setPassword(e.target.value)}
-				name={"password"}
-			/>
+			<div>
+				<label htmlFor={"password"}>Password:</label>
+				<input
+					type="text"
+					id="password"
+					required
+					value={password}
+					onChange={(e) => setPassword(e.target.value)}
+					name={"password"}
+				/>
+			</div>
 
 			<div>
 				<button onClick={onSubmitLogin}>Submit</button>
 			</div>
-
-
-
 		</div>
 	);
 }
