@@ -1,4 +1,4 @@
-import {getURL, httpClient} from "@/Services/HttpClient.tsx";
+import { httpClient } from "@/Services/HttpClient.tsx";
 import { createContext, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -104,6 +104,7 @@ function getTokenFromStorage() {
 
 export async function getLoginTokenFromServer(email, password) {
 	console.log("In get login token from server with ", email, password);
+
 	const login_result = await httpClient.post("/login", { email, password });
 	return login_result.data.token;
 }

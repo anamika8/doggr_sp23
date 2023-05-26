@@ -37,7 +37,7 @@ export function MatchRoutesInit(app: FastifyInstance) {
 
 	app.post<{ Body: { sender_id: number; passee_id: number } }>("/pass", async (req, reply) => {
 		const { sender_id, passee_id } = req.body;
-
+		console.log(`sender ${sender_id}, receiver  ${passee_id}`);
 		try {
 			const passee = await req.em.getReference(User, passee_id);
 			// do the same for the matcher/owner
