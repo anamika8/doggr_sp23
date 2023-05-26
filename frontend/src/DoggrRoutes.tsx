@@ -3,6 +3,7 @@ import { Home } from "@/Components/HomePage.tsx";
 import { Login } from "@/Components/Login.tsx";
 import { Logout } from "@/Components/Logout.tsx";
 import { Match } from "@/Components/Match.tsx";
+import { Message } from "@/Components/Message.tsx";
 import { ProtectedRoute } from "@/Components/ProtectedRoute.tsx";
 import { useAuth } from "@/Services/Auth.tsx";
 import { Link, Route, Routes } from "react-router-dom";
@@ -37,6 +38,7 @@ export function DoggrRouter() {
 				<Route path="/" element={<Home />} />
 				<Route path="/match" element={<ProtectedRoute><Match /></ProtectedRoute>} />
 				<Route path="/create" element={<CreateProfile/>}/>
+				<Route path="/messages" element={<ProtectedRoute><Message /></ProtectedRoute>} />
 				<Route path="/login" element={<Login />} />
 				<Route path="/logout" element={<Logout />} />
 			</Routes>

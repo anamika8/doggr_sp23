@@ -7,11 +7,13 @@ import { MatchService } from "@/Services/MatchService.tsx";
 import { PassService } from "@/Services/PassService.tsx";
 import { MessageService } from "@/Services/MessageService.tsx";
 import { useContext, useEffect, useState } from "react";
+import { useNavigate } from 'react-router-dom';
 
 export const Match = () => {
 	const [currentProfile, setCurrentProfile] = useState<ProfileType>();
 
 	const auth = useAuth();
+	const navigate = useNavigate();
 
 	const fetchProfile = () => {
 		getNextProfileFromServer()
@@ -45,7 +47,10 @@ export const Match = () => {
 		MessageService.send(auth.userId, currentProfile.id)
 			.then(() => {
 				console.log("Message sent successfully!");
+				// Navigate to a different page
+				navigate('/messages');
 				fetchProfile(); // Fetch the next profile after sending the message
+
 			})
 			.catch((err) => {
 				console.error(err);
