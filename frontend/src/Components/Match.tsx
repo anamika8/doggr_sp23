@@ -5,6 +5,7 @@ import { useAuth } from "@/Services/Auth.tsx";
 import { getNextProfileFromServer } from "@/Services/HttpClient.tsx";
 import { MatchService } from "@/Services/MatchService.tsx";
 import { PassService } from "@/Services/PassService.tsx";
+import { MessageService } from "@/Services/MessageService.tsx";
 import { useContext, useEffect, useState } from "react";
 
 export const Match = () => {
@@ -40,11 +41,24 @@ export const Match = () => {
 			});
 	};
 
+	const onMessageButtonClick = () => { // Handle the message button click event
+		MessageService.send(auth.userId, currentProfile.id)
+			.then(() => {
+				console.log("Message sent successfully!");
+				fetchProfile(); // Fetch the next profile after sending the message
+			})
+			.catch((err) => {
+				console.error(err);
+				fetchProfile(); // Fetch the next profile even if there was an error
+			});
+	};
+
 	const profile = (
 		<Profile
 			{...currentProfile}
 			onLikeButtonClick={onLikeButtonClick}
 			onPassButtonClick={onPassButtonClick}
+			onMessageButtonClick={onMessageButtonClick}
 		/>
 	);
 

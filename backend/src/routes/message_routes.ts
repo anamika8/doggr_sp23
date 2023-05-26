@@ -26,7 +26,7 @@ export function MessageRoutesInit(app: FastifyInstance) {
 	 */
 	app.post<{ Body: ICreateMessage }>("/messages", async (req, reply) => {
 		const { sender_id, receiver_id, message } = req.body;
-
+		console.log(`sender ${sender_id}, receiver  ${receiver_id}, message: ${message}`);
 		// Check for bad words - We could move this into its own utility service, but it's only used here for now
 		// No reason to prematurely refactor things we might never need again
 		let badword = undefined;
@@ -47,7 +47,7 @@ export function MessageRoutesInit(app: FastifyInstance) {
 			//Find our two user IDs, so we can link them into our new message
 			const senderEntity = await userRepository.getReference(sender_id);
 			const receiverEntity = await userRepository.getReference(receiver_id);
-
+			console.log("user entities got");
 			// Create the new message
 			const newMessage = await req.em.create(Message, {
 				sender: senderEntity,
@@ -56,7 +56,7 @@ export function MessageRoutesInit(app: FastifyInstance) {
 			});
 			// Send our changes to the database
 			await req.em.flush();
-
+			console.log(newMessage);
 			// Let the user know everything went fine
 			return reply.send(newMessage);
 		} catch (err) {
