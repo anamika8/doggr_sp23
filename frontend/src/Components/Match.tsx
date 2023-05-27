@@ -44,7 +44,11 @@ export const Match = () => {
 	};
 
 	const onMessageButtonClick = () => { // Handle the message button click event
-		navigate(`/messages`);
+		navigate(`/messages`, {
+			state:{
+				receiverId: currentProfile.id
+			}
+		});
 	};
 
 	const profile = (

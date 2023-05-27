@@ -1,12 +1,16 @@
-import { httpClient, getProfileById, getNextProfileFromServer } from "@/Services/HttpClient.tsx";
+import { httpClient, getProfileById } from "@/Services/HttpClient.tsx";
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { ProfileType } from "@/DoggrTypes.ts";
+import { useAuth } from "@/Services/Auth.tsx";
 
-export const Message = ({ selectedProfileId }) => {
+export const Message = () => {
     const [currentProfile, setCurrentProfile] = useState<ProfileType>();
     const [message, setMessage] = useState("");
     const [sending, setSending] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const location = useLocation();
+    const auth = useAuth();
 
     const handleMessageChange = (e) => {
         setMessage(e.target.value);
@@ -19,14 +23,16 @@ export const Message = ({ selectedProfileId }) => {
     };
 
     useEffect(() => {
-        console.log("Props returned selected profile id = ", selectedProfileId);
+        const selectedProfileId = location.state.receiverId;
         fetchCurrentProfile(selectedProfileId);
-    }, [selectedProfileId]);
+    }, [location.state.receiverId]);
 
     const handleSendMessage = () => {
         setSending(true);
 
         const payload = {
+            sender_id: auth.userId,
+            receiver_id: location.state.receiverId,
             message: message,
         };
 

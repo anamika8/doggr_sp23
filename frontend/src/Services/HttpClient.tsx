@@ -43,4 +43,5 @@ export async function getProfileById(id) {
 		.catch((error) => {
 			console.log(error);
 		});
+	return null;
 }
