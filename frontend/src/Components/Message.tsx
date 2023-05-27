@@ -1,7 +1,9 @@
-import { httpClient } from "@/Services/HttpClient.tsx";
-import { useState } from "react";
+import {httpClient, getProfileById, getNextProfileFromServer} from "@/Services/HttpClient.tsx";
+import {useEffect, useState} from "react";
+import {ProfileType} from "@/DoggrTypes.ts";
 
-export const Message = ({ userProfilePicture }) => {
+export const Message = ({currentId}) => {
+    const [currentProfile, setCurrentProfile] = useState<ProfileType>();
     const [message, setMessage] = useState("");
     const [sending, setSending] = useState(false);
     const [submitted, setSubmitted] = useState(false);
@@ -9,6 +11,17 @@ export const Message = ({ userProfilePicture }) => {
     const handleMessageChange = (e) => {
         setMessage(e.target.value);
     };
+
+    const fetchCurrentProfile = (id) => {
+        // @ts-ignore
+        getProfileById(id)
+            .then((response) => setCurrentProfile(response))
+            .catch( (err) => console.log("Error in fetch profile", err));
+    };
+
+    useEffect(() => {
+        fetchCurrentProfile(currentId);
+    }, []);
 
     const handleSendMessage = () => {
         setSending(true);
@@ -40,7 +53,7 @@ export const Message = ({ userProfilePicture }) => {
         <div className="flex flex-col items-center bg-slate-700 w-4/5 mx-auto p-5 rounded-box">
             {/* Display user profile picture */}
             <img
-                src={userProfilePicture}
+                src={null}
                 alt="Profile Picture"
                 className="w-16 h-16 rounded-full mb-5"
             />

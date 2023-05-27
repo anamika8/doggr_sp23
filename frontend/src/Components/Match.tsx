@@ -44,18 +44,7 @@ export const Match = () => {
 	};
 
 	const onMessageButtonClick = () => { // Handle the message button click event
-		MessageService.send(auth.userId, currentProfile.id)
-			.then(() => {
-				console.log("Message sent successfully!");
-				// Navigate to a different page
-				navigate('/messages');
-				fetchProfile(); // Fetch the next profile after sending the message
-
-			})
-			.catch((err) => {
-				console.error(err);
-				fetchProfile(); // Fetch the next profile even if there was an error
-			});
+		navigate(`/messages`);
 	};
 
 	const profile = (

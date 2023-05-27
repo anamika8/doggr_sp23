@@ -19,3 +19,28 @@ export async function getNextProfileFromServer() {
 		await httpClient.get<ProfileType>("/profile");
 	return profile.data;
 }
+
+export async function getProfileById(id) {
+	const data = JSON.stringify({
+		"id": 5
+	});
+
+	const config = {
+		method: 'search',
+		maxBodyLength: Infinity,
+		url: `${serverUrl}/users`,
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		data : data
+	};
+
+	axios.request(config)
+		.then((response) => {
+			console.log(JSON.stringify(response.data));
+			return response.data;
+		})
+		.catch((error) => {
+			console.log(error);
+		});
+}
