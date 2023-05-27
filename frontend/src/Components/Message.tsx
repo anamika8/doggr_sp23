@@ -1,8 +1,8 @@
-import {httpClient, getProfileById, getNextProfileFromServer} from "@/Services/HttpClient.tsx";
-import {useEffect, useState} from "react";
-import {ProfileType} from "@/DoggrTypes.ts";
+import { httpClient, getProfileById, getNextProfileFromServer } from "@/Services/HttpClient.tsx";
+import { useEffect, useState } from "react";
+import { ProfileType } from "@/DoggrTypes.ts";
 
-export const Message = ({currentId}) => {
+export const Message = ({ selectedProfileId }) => {
     const [currentProfile, setCurrentProfile] = useState<ProfileType>();
     const [message, setMessage] = useState("");
     const [sending, setSending] = useState(false);
@@ -13,15 +13,15 @@ export const Message = ({currentId}) => {
     };
 
     const fetchCurrentProfile = (id) => {
-        // @ts-ignore
         getProfileById(id)
             .then((response) => setCurrentProfile(response))
-            .catch( (err) => console.log("Error in fetch profile", err));
+            .catch((err) => console.log("Error in fetch profile", err));
     };
 
     useEffect(() => {
-        fetchCurrentProfile(currentId);
-    }, []);
+        console.log("Props returned selected profile id = ", selectedProfileId);
+        fetchCurrentProfile(selectedProfileId);
+    }, [selectedProfileId]);
 
     const handleSendMessage = () => {
         setSending(true);
@@ -93,4 +93,3 @@ export const Message = ({currentId}) => {
         </div>
     );
 };
-
