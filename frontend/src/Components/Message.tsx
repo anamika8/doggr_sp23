@@ -59,7 +59,7 @@ export const Message = () => {
         <div className="flex flex-col items-center bg-slate-700 w-4/5 mx-auto p-5 rounded-box">
             {/* Display user profile picture */}
             <img
-                src={null}
+                src={`http://localhost:9000/doggr/${location.state.imgUri}`}
                 alt="Profile Picture"
                 className="w-16 h-16 rounded-full mb-5"
             />
@@ -83,6 +83,11 @@ export const Message = () => {
             {/* Send button */}
             <button
                 className="btn btn-primary btn-circle"
+                style={{
+                    backgroundColor: sending || message === "" ? "#ccc" : "",
+                    cursor: sending || message === "" ? "not-allowed" : "pointer",
+                    color: sending || message === "" ? "#777" : "#fff",
+                }}
                 onClick={handleSendMessage}
                 disabled={sending || message === ""}
             >
@@ -92,9 +97,6 @@ export const Message = () => {
             {/* Display submission status */}
             {submitted && (
                 <p className="text-green-500 mt-2">Message submitted successfully!</p>
-            )}
-            {!submitted && submitted !== null && (
-                <p className="text-red-500 mt-2">Failed to submit the message.</p>
             )}
         </div>
     );

@@ -1,17 +1,14 @@
-
 import { Profile } from "@/Components/Profile.tsx";
 import { ProfileType } from "@/DoggrTypes.ts";
 import { useAuth } from "@/Services/Auth.tsx";
 import { getNextProfileFromServer } from "@/Services/HttpClient.tsx";
 import { MatchService } from "@/Services/MatchService.tsx";
 import { PassService } from "@/Services/PassService.tsx";
-import { MessageService } from "@/Services/MessageService.tsx";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 
 export const Match = () => {
 	const [currentProfile, setCurrentProfile] = useState<ProfileType>();
-
 	const auth = useAuth();
 	const navigate = useNavigate();
 
@@ -46,7 +43,8 @@ export const Match = () => {
 	const onMessageButtonClick = () => { // Handle the message button click event
 		navigate(`/messages`, {
 			state:{
-				receiverId: currentProfile.id
+				receiverId: currentProfile.id,
+				imgUri: currentProfile.imgUri
 			}
 		});
 	};

@@ -22,7 +22,7 @@ export async function getNextProfileFromServer() {
 
 export async function getProfileById(id) {
 	const data = JSON.stringify({
-		"id": 5
+		"id": id
 	});
 
 	const config = {
@@ -37,7 +37,6 @@ export async function getProfileById(id) {
 
 	axios.request(config)
 		.then((response) => {
-			console.log(JSON.stringify(response.data));
 			return response.data;
 		})
 		.catch((error) => {
