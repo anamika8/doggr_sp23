@@ -93,11 +93,6 @@ export const Message = () => {
             >
                 {sending ? "Sending..." : "Send"}
             </button>
-
-            {/* Display submission status */}
-            {submitted && (
-                <p className="text-green-500 mt-2">Message submitted successfully!</p>
-            )}
         </div>
     );
 };

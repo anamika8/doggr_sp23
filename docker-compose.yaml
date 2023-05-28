@@ -32,6 +32,11 @@ services:
       - MINIO_SERVER_SECRET_KEY=minioPass
     volumes:
       - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://minio:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 
   backend:
@@ -51,6 +56,7 @@ services:
       - PASSWORD=password
       - NODE_ENV=development
       - AUTH_SECRET=supersecret219340818092358
+      - MINIO_HOST=minio
     depends_on:
       postgres:
         condition: service_healthy
